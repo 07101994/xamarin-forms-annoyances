@@ -35,8 +35,19 @@ namespace IOCAntipattern.Forms
          var containerBuilder = new ContainerBuilder();
          containerBuilder.RegisterType<ParentViewModel>().As<IParentViewModel>().SingleInstance();
          containerBuilder.RegisterType<ChildViewModel>().As<IChildViewModel>();
-         containerBuilder.RegisterType<MainViewModel>().As<IMainViewModel>().SingleInstance();
-         containerBuilder.RegisterType<SecondViewModel>().As<ISecondViewModel>().SingleInstance();
+
+         // Maintains only a single instance, but might cause problems with disposal
+         //containerBuilder.RegisterType<MainViewModel>().As<IMainViewModel>().SingleInstance();
+         //containerBuilder.RegisterType<SecondViewModel>().As<ISecondViewModel>().SingleInstance();
+
+         // Normal usage
+         //containerBuilder.RegisterType<MainViewModel>().As<IMainViewModel>();
+         //containerBuilder.RegisterType<SecondViewModel>().As<ISecondViewModel>();
+
+         // Revised to ensure that there is an *single* alignment between the view and the view model.
+         containerBuilder.RegisterType<MainViewModel>().As<IMainViewModel>().InstancePerDependency();
+         containerBuilder.RegisterType<SecondViewModel>().As<ISecondViewModel>().InstancePerDependency();
+
          containerBuilder.RegisterType<FirstPossibleInjectedClass>().As<IGeneralInjectable>();
          containerBuilder.RegisterType<FirstPossibleInjectedClass>().As<IOtherwiseInjectable>();
          containerBuilder.RegisterType<SecondPossibleInjectedClass>().As<IGeneralInjectable>();

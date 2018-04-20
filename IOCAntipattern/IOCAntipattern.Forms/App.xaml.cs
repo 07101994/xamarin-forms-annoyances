@@ -26,11 +26,14 @@
 
 #endregion
 
+// #define PREVENT_PAGE_CHANGE
+
 namespace IOCAntipattern.Forms
 {
    #region Imports
 
    using System;
+   using System.Diagnostics;
    using System.Threading.Tasks;
    using Autofac;
    using Xamarin.Forms;
@@ -62,9 +65,18 @@ namespace IOCAntipattern.Forms
                {
                   await Task.Delay(5000);
                   var secondPage = new SecondPage();
+                  Debug.WriteLine("About to assign the main page to the second page.");
                   MainPage = secondPage;
+                  Debug.WriteLine("Finished assigning the main page to the second page.");
+
+#if !PREVENT_PAGE_CHANGE
                   await Task.Delay(5000);
+                  Debug.WriteLine("About to assign the main page to the original main page.");
                   MainPage = mainPage;
+                  Debug.WriteLine("Finished assigning the main page to the original main page.");
+#endif
+
+                  // Force clean-up
                   secondPage = null;
                   GC.Collect();
                });

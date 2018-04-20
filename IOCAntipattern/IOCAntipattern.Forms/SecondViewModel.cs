@@ -28,36 +28,48 @@ namespace IOCAntipattern.Forms
 {
    using System;
    using System.Diagnostics;
+   using System.Threading.Tasks;
    using Xamarin.Forms;
 
    public interface ISecondViewModel
    {
    }
 
-   public class SecondViewModel : ISecondViewModel
+   public class SecondViewModel : ISecondViewModel, IDisposable
    {
-      private bool _isAlive;
-
       public SecondViewModel()
       {
-         _isAlive = true;
-
-         Device.StartTimer(TimeSpan.FromSeconds(1), () =>
-         {
-            if (_isAlive)
-            {
-               Debug.WriteLine("Second View Model is still alive");
-            }
-
-            return _isAlive;
-         });
+         Device.BeginInvokeOnMainThread
+            (
+               async () =>
+               {
+                  while(true)
+                  {
+                     await Task.Delay(1000);
+                     Debug.WriteLine("Second View Model is still alive");
+                  }
+               }
+            );
       }
 
-      // The only way to determine if this object is being garbage-collected
-      ~SecondViewModel()
+      private void ReleaseUnmanagedResources()
       {
-         _isAlive = false;
-         Debug.WriteLine("Second View Model is being garbage collected");
+         // TODO release unmanaged resources here
+         Debug.WriteLine("Second View Model HAS BEEN DISPOSED");
+      }
+
+      protected virtual void Dispose(bool disposing)
+      {
+         ReleaseUnmanagedResources();
+         if (disposing)
+         {
+         }
+      }
+
+      public void Dispose()
+      {
+         Dispose(true);
+         GC.SuppressFinalize(this);
       }
    }
 }
