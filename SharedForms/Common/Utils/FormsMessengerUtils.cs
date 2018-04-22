@@ -1,43 +1,45 @@
 ﻿#region License
 
 // MIT License
-// 
-// Copyright (c) 2018 
-// Marcus Technical Services, Inc.
-// http://www.marcusts.com
-// 
-// Permission is hereby granted, free of charge, to any person obtaining a copy
-// of this software and associated documentation files (the "Software"), to deal
-// in the Software without restriction, including without limitation the rights
-// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-// copies of the Software, and to permit persons to whom the Software is
+//
+// Copyright (c) 2018 Marcus Technical Services, Inc. http://www.marcusts.com
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
+// associated documentation files (the "Software"), to deal in the Software without restriction,
+// including without limitation the rights to use, copy, modify, merge, publish, distribute,
+// sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is
 // furnished to do so, subject to the following conditions:
-// 
-// The above copyright notice and this permission notice shall be included in all
-// copies or substantial portions of the Software.
-// 
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-// SOFTWARE.
+//
+// The above copyright notice and this permission notice shall be included in all copies or
+// substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT
+// NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+// NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+// DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT
+// OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-#endregion
+#endregion License
 
 namespace SharedForms.Common.Utils
 {
    #region Imports
 
+   using Interfaces;
    using System;
    using ViewModels;
    using Xamarin.Forms;
 
-   #endregion
+   #endregion Imports
 
-   public interface IMessage
+   public enum PageLifecycleEvents
    {
+      BeforeConstructing,
+      AfterConstructing,
+      BeforeAppearing,
+      AfterAppearing,
+      BeforeDisappearing,
+      AfterDisappearing
    }
 
    /// <summary>
@@ -45,6 +47,8 @@ namespace SharedForms.Common.Utils
    /// </summary>
    public static class FormsMessengerUtils
    {
+      #region Public Methods
+
       public static void Send<TMessage>(TMessage message, object sender = null) where TMessage : IMessage
       {
          if (sender == null)
@@ -55,7 +59,8 @@ namespace SharedForms.Common.Utils
          MessagingCenter.Send(sender, typeof(TMessage).FullName, message);
       }
 
-      public static void Subscribe<TMessage>(object subscriber, Action<object, TMessage> callback) where TMessage : IMessage
+      public static void Subscribe<TMessage>(object subscriber, Action<object, TMessage> callback)
+         where TMessage : IMessage
       {
          MessagingCenter.Subscribe(subscriber, typeof(TMessage).FullName, callback);
       }
@@ -64,53 +69,170 @@ namespace SharedForms.Common.Utils
       {
          MessagingCenter.Unsubscribe<object, TMessage>(subscriber, typeof(TMessage).FullName);
       }
+
+      #endregion Public Methods
    }
 
-   public class NoPayloadMessage : IMessage
+   public class AppStateChangedMessage : GenericMessageWithPayload<AppStateChangeMessageArgs>
    {
+      #region Public Constructors
+
+      public AppStateChangedMessage(string oldAppState, bool preventNavStackPush)
+      {
+         Payload = new AppStateChangeMessageArgs(oldAppState, preventNavStackPush);
+      }
+
+      #endregion Public Constructors
+   }
+
+   public class AppStateChangeMessageArgs
+   {
+      #region Public Constructors
+
+      public AppStateChangeMessageArgs(string oldAppState, bool preventNavStackPush)
+      {
+         OldAppState = oldAppState;
+         PreventNavStackPush = preventNavStackPush;
+      }
+
+      #endregion Public Constructors
+
+      #region Public Properties
+
+      public string OldAppState { get; set; }
+
+      public bool PreventNavStackPush { get; set; }
+
+      #endregion Public Properties
+   }
+
+   public class DeviceSizeChangedMessage : GenericMessageWithPayload<DeviceSizeChangeMessageArgs>
+   {
+      #region Public Constructors
+
+      public DeviceSizeChangedMessage(float width, float height)
+      {
+         Payload = new DeviceSizeChangeMessageArgs(width, height);
+      }
+
+      #endregion Public Constructors
+   }
+
+   /// <summary>
+   /// This message is issued as the args whenever a local platform senses a change in its orientation.
+   /// </summary>
+   public class DeviceSizeChangeMessageArgs : IDeviceSizeChangeMessageArgs
+   {
+      #region Public Constructors
+
+      public DeviceSizeChangeMessageArgs(float width, float height)
+      {
+         ScreenWidth = width;
+         ScreenHeight = height;
+      }
+
+      #endregion Public Constructors
+
+      #region Public Properties
+
+      public float ScreenHeight { get; set; }
+      public float ScreenWidth { get; set; }
+
+      #endregion Public Properties
    }
 
    public abstract class GenericMessageWithPayload<T> : IMessage
    {
+      #region Public Properties
+
       public T Payload { get; set; }
+
+      #endregion Public Properties
+   }
+
+   public class MainPageBindingContextChangeRequestMessage : GenericMessageWithPayload<IViewModelBase>
+   {
+      #region Public Properties
+
+      public bool PreventNavStackPush { get; set; }
+
+      #endregion Public Properties
    }
 
    public class MainPageChangeRequestMessage : GenericMessageWithPayload<Page>
    {
-      public bool PreventNavStackPush { get; set; }
-   }
+      #region Public Properties
 
-   public class BindingContextChangeRequestMessage : GenericMessageWithPayload<IViewModelBase>
-   {
       public bool PreventNavStackPush { get; set; }
-   }
 
-   public class NavBarMenuTappedMessage : NoPayloadMessage
-   {
+      #endregion Public Properties
    }
 
    public class MenuLoadedMessage : NoPayloadMessage
    {
    }
 
-   public class AppStateChangedMessage : GenericMessageWithPayload<AppStateChanges>
+   public class NavBarMenuTappedMessage : NoPayloadMessage
    {
-      public AppStateChangedMessage(string oldAppState, bool preventNavStackPush)
-      {
-         Payload = new AppStateChanges(oldAppState, preventNavStackPush);
-      }
    }
 
-   public class AppStateChanges
+   public class NoPayloadMessage : IMessage
    {
-      public AppStateChanges(string oldAppState, bool preventNavStackPush)
+   }
+
+   public class PageLifecycleMessage : GenericMessageWithPayload<IPageLifecycleMessageArgs>
+   {
+      #region Public Constructors
+
+      public PageLifecycleMessage(IProvidePageEvents sendingPage, PageLifecycleEvents pageEvent)
       {
-         OldAppState = oldAppState;
-         PreventNavStackPush = preventNavStackPush;
+         Payload = new PageLifecycleMessageArgs(sendingPage, pageEvent);
       }
 
-      public string OldAppState { get; set; }
+      #endregion Public Constructors
+   }
 
-      public bool PreventNavStackPush { get; set; }
+   public class PageLifecycleMessageArgs : IPageLifecycleMessageArgs
+   {
+      #region Public Constructors
+
+      public PageLifecycleMessageArgs(IProvidePageEvents sendingPage, PageLifecycleEvents pageEvent)
+      {
+         SendingPage = sendingPage;
+         PageEvent = pageEvent;
+      }
+
+      #endregion Public Constructors
+
+      #region Public Properties
+
+      public PageLifecycleEvents PageEvent { get; set; }
+      public IProvidePageEvents SendingPage { get; set; }
+
+      #endregion Public Properties
+   }
+
+   public interface IDeviceSizeChangeMessageArgs
+   {
+      #region Public Properties
+
+      float ScreenHeight { get; set; }
+      float ScreenWidth { get; set; }
+
+      #endregion Public Properties
+   }
+
+   public interface IMessage
+   {
+   }
+
+   public interface IPageLifecycleMessageArgs
+   {
+      #region Public Properties
+
+      PageLifecycleEvents PageEvent { get; set; }
+      IProvidePageEvents SendingPage { get; set; }
+
+      #endregion Public Properties
    }
 }

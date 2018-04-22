@@ -98,13 +98,13 @@ namespace MvvmAntipattern.Forms
       private void SubscribeToPageChangedMessages()
       {
          FormsMessengerUtils.Subscribe<MainPageChangeRequestMessage>(this, MainPageChanged);
-         FormsMessengerUtils.Subscribe<BindingContextChangeRequestMessage>(this, BindingContextPageChanged);
+         FormsMessengerUtils.Subscribe<MainPageBindingContextChangeRequestMessage>(this, BindingContextPageChanged);
       }
 
       private void UsubscribeFromPageChangedMessages()
       {
          FormsMessengerUtils.Unsubscribe<MainPageChangeRequestMessage>(this);
-         FormsMessengerUtils.Unsubscribe<BindingContextChangeRequestMessage>(this);
+         FormsMessengerUtils.Unsubscribe<MainPageBindingContextChangeRequestMessage>(this);
       }
 
       private void MainPageChanged(object sender, MainPageChangeRequestMessage messageArgs)
@@ -130,7 +130,7 @@ namespace MvvmAntipattern.Forms
          _lastMainPage = MainPage;
       }
 
-      private void BindingContextPageChanged(object sender, BindingContextChangeRequestMessage messageArgs)
+      private void BindingContextPageChanged(object sender, MainPageBindingContextChangeRequestMessage messageArgs)
       {
          if (MainPage != null)
          {

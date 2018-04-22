@@ -31,11 +31,12 @@ namespace MvvmAntipattern.Forms.Common.Navigation
    #region Imports
 
    using System;
-   using Models;
    using SharedForms.Common.Generators;
    using SharedForms.Common.Interfaces;
    using SharedForms.Common.Navigation;
+   using SharedForms.Models.Samples;
    using SharedForms.ViewModels;
+   using SharedForms.ViewModels.Samples;
    using SharedForms.Views.Pages;
    using ViewModels;
    using Views.Pages;

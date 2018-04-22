@@ -1,123 +1,55 @@
 ﻿#region License
 
 // MIT License
-// 
-// Copyright (c) 2018 
-// Marcus Technical Services, Inc.
-// http://www.marcusts.com
-// 
-// Permission is hereby granted, free of charge, to any person obtaining a copy
-// of this software and associated documentation files (the "Software"), to deal
-// in the Software without restriction, including without limitation the rights
-// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-// copies of the Software, and to permit persons to whom the Software is
+//
+// Copyright (c) 2018 Marcus Technical Services, Inc. http://www.marcusts.com
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
+// associated documentation files (the "Software"), to deal in the Software without restriction,
+// including without limitation the rights to use, copy, modify, merge, publish, distribute,
+// sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is
 // furnished to do so, subject to the following conditions:
-// 
-// The above copyright notice and this permission notice shall be included in all
-// copies or substantial portions of the Software.
-// 
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-// SOFTWARE.
+//
+// The above copyright notice and this permission notice shall be included in all copies or
+// substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT
+// NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+// NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+// DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT
+// OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-#endregion
+#endregion License
 
 namespace SharedForms.Views.SubViews
 {
    #region Imports
 
-   using System;
-   using System.Linq;
    using Autofac;
-   using Common.Interfaces;
    using Common.Navigation;
    using Common.Utils;
    using Controls;
    using Pages;
    using PropertyChanged;
    using SharedGlobals.Container;
+   using System;
+   using System.Linq;
    using ViewModels;
    using Xamarin.Forms;
 
-   #endregion
-
-   public interface INavAndMenuBar : IDisposable
-   {
-      Page HostingPage { get; set; }
-   }
+   #endregion Imports
 
    [AddINotifyPropertyChangedInterface]
    public class NavAndMenuBar : ContentView, INavAndMenuBar
    {
-      public static readonly double OVERALL_HEIGHT = 45.0;
-
-      private const string HAMBURGER_IMAGE = "hamburger_with_shadow_512.png";
-      private const string BACK_IMAGE = "left_arrow_with_shadow_512.png";
-      private static readonly double BUTTON_HEIGHT = 30.0;
-      private static readonly FlexibleStack<string> _appStateBackButtonStack = new FlexibleStack<string>();
-      private static readonly Thickness IOS_MARGIN = new Thickness(0, 20, 0, 0);
-
-      public static readonly BindableProperty HostingPageProperty =
-         BindableProperty.Create(nameof(HostingPage), typeof(Page), typeof(NavAndMenuBar), default(Page),
-            propertyChanged: OnHostingPageChanged);
-
-      private Image _backButton;
-      private Page _hostingPage;
-      private Image _menuButton;
-      private bool _menuButtonEntered;
-      private static IStateMachineBase _stateMachine;
-      private Label _titleLabel;
-      private bool IsNavigationAvailable => _appStateBackButtonStack.IsNotEmpty();
-
-      /// <remarks>
-      /// Not used in the run-time app but can be called for unit testing.
-      /// </remarks>
-      public NavAndMenuBar(IStateMachineBase stateMachine)
-      {
-         _stateMachine = stateMachine;
-
-         BackgroundColor = Colors.HEADER_AND_TOOLBAR_COLOR_DEEP;
-
-         if (Device.RuntimePlatform.IsSameAs(Device.iOS))
-         {
-            Margin = IOS_MARGIN;
-         }
-
-         // Listen for the static page change
-         AskToSetBackButtonVisiblity += SetBackButtonVisiblity;
-
-         // These message are subscribed but never unsubscribed.
-         // The menu is global static, so persists throughout the life of the app.
-         // There is no reason to unsubscribe them under these circumstances.
-         FormsMessengerUtils.Subscribe<MenuLoadedMessage>(this, OnMenuLoaded);
-         FormsMessengerUtils.Subscribe<AppStateChangedMessage>(this, OnAppStateChanged);
-      }
-
-      /// <remarks>
-      /// Must be parameterless due to the XAML page control template at ap.xaml.
-      /// This makes  the menu non-testable, as this is a hidden dependency.
-      /// </remarks>
-      public NavAndMenuBar() :
-         this(AppContainer.GlobalVariableContainer.Resolve<IStateMachineBase>())
-      {
-      }
-
-      private bool IsMenuLoaded { get; set; }
-
-      private void OnMenuLoaded(object sender, MenuLoadedMessage args)
-      {
-         IsMenuLoaded = true;
-      }
+      #region Public Properties
 
       public Page HostingPage
       {
          get => _hostingPage;
          set
          {
+            // Remove the old event handler, if any.
             RemoveHostingPageBindingContextChangedHandler();
 
             _hostingPage = value;
@@ -148,12 +80,11 @@ namespace SharedForms.Views.SubViews
 
                // Add the menu if that is allowed.
                _menuButton = CreateNavBarButton(HAMBURGER_IMAGE, MenuButtonTapped);
-                _menuButton.HorizontalOptions = LayoutOptions.End;
+               _menuButton.HorizontalOptions = LayoutOptions.End;
                _menuButton.SetUpBinding(IsVisibleProperty, nameof(IsMenuLoaded));
                grid.Children.Add(_menuButton, 3, 0);
 
-               // Bind the title, center with margins and overlay
-               // Currently depends on the page being navigable
+               // Bind the title, center with margins and overlay Currently depends on the page being navigable
                _titleLabel =
                   FormsUtils.GetSimpleLabel
                   (
@@ -177,53 +108,115 @@ namespace SharedForms.Views.SubViews
          }
       }
 
+      #endregion Public Properties
+
+      #region Public Methods
+
       public void Dispose()
       {
          ReleaseUnmanagedResources();
          GC.SuppressFinalize(this);
       }
 
-      private void SetUpHostingBindingContexts()
+      #endregion Public Methods
+
+      #region Public Events
+
+      public static event EventUtils.NoParamsDelegate AskToSetBackButtonVisiblity;
+
+      #endregion Public Events
+
+      #region Private Destructors
+
+      ~NavAndMenuBar()
       {
-         BindingContext = _hostingPage.BindingContext;
-         _menuButton.BindingContext = this;
-         _titleLabel.BindingContext = _hostingPage.BindingContext;
+         ReleaseUnmanagedResources();
       }
 
-      private void OnHostingPageBindingContextChanged(object sender, EventArgs e)
-      {
-         SetUpHostingBindingContexts();
-      }
+      #endregion Private Destructors
 
-      private void RemoveHostingPageBindingContextChangedHandler()
+      #region Public Variables
+
+      public static readonly BindableProperty HostingPageProperty =
+         BindableProperty.Create(nameof(HostingPage), typeof(Page), typeof(NavAndMenuBar), default(Page),
+            propertyChanged: OnHostingPageChanged);
+
+      public static readonly double OVERALL_HEIGHT = 45.0;
+
+      #endregion Public Variables
+
+      #region Private Variables
+
+      private const string BACK_IMAGE = "left_arrow_with_shadow_512.png";
+
+      private const string HAMBURGER_IMAGE = "hamburger_with_shadow_512.png";
+
+      private static readonly FlexibleStack<string> _appStateBackButtonStack = new FlexibleStack<string>();
+
+      private static readonly double BUTTON_HEIGHT = 30.0;
+
+      private static readonly Thickness IOS_MARGIN = new Thickness(0, 20, 0, 0);
+
+      private static IStateMachineBase _stateMachine;
+
+      private Image _backButton;
+
+      private Page _hostingPage;
+
+      private Image _menuButton;
+
+      private bool _menuButtonEntered;
+
+      private Label _titleLabel;
+
+      #endregion Private Variables
+
+      #region Public Constructors
+
+      /// <remarks>Not used in the run-time app but can be called for unit testing.</remarks>
+      public NavAndMenuBar(IStateMachineBase stateMachine)
       {
-         if (_hostingPage != null)
+         _stateMachine = stateMachine;
+
+         BackgroundColor = ColorUtils.HEADER_AND_TOOLBAR_COLOR_DEEP;
+
+         if (Device.RuntimePlatform.IsSameAs(Device.iOS))
          {
-            _hostingPage.BindingContextChanged -= OnHostingPageBindingContextChanged;
+            Margin = IOS_MARGIN;
          }
+
+         // Listen for the static page change
+         AskToSetBackButtonVisiblity += SetBackButtonVisiblity;
+
+         // These message are subscribed but never unsubscribed. The menu is global static, so
+         // persists throughout the life of the app. There is no reason to unsubscribe them under
+         // these circumstances.
+         FormsMessengerUtils.Subscribe<MenuLoadedMessage>(this, OnMenuLoaded);
+         FormsMessengerUtils.Subscribe<AppStateChangedMessage>(this, OnAppStateChanged);
       }
 
-      private Image CreateNavBarButton(string imagePath, EventHandler menuButtonTapped)
+      /// <remarks>
+      /// Must be parameterless due to the XAML page control template at app.xaml. This defeats the
+      /// flexibility of menu unit testing, as the injected dependency is hard-coded below.
+      /// </remarks>
+      public NavAndMenuBar() :
+         this(AppContainer.GlobalVariableContainer.Resolve<IStateMachineBase>())
       {
-         var retImage = FormsUtils.GetImage(imagePath, height: BUTTON_HEIGHT);
-
-         var imageTap = new TapGestureRecognizer();
-         imageTap.Tapped += menuButtonTapped;
-         retImage.GestureRecognizers.Add(imageTap);
-         retImage.VerticalOptions = LayoutOptions.Center;
-
-         return retImage;
       }
 
-      private static void OnHostingPageChanged(BindableObject bindable, object oldvalue, object newvalue)
-      {
-         if (bindable is NavAndMenuBar bindableAsNavAndMenuBar)
-         {
-            bindableAsNavAndMenuBar.HostingPage = newvalue as Page;
-         }
-      }
+      #endregion Public Constructors
 
-      private void OnAppStateChanged(object sender, AppStateChangedMessage appStateChangedMessage)
+      #region Private Properties
+
+      private bool IsMenuLoaded { get; set; }
+
+      private bool IsNavigationAvailable => _appStateBackButtonStack.IsNotEmpty();
+
+      #endregion Private Properties
+
+      #region Private Methods
+
+      private static void OnAppStateChanged(object sender, AppStateChangedMessage appStateChangedMessage)
       {
          // If the old page as a non-navigation page, it cannot go onto the back stack.
          if (appStateChangedMessage.Payload.OldAppState.IsEmpty())
@@ -248,61 +241,15 @@ namespace SharedForms.Views.SubViews
          AskToSetBackButtonVisiblity?.Invoke();
       }
 
-      public static event EventUtils.NoParamsDelegate AskToSetBackButtonVisiblity;
-
-
-      private void SetBackButtonVisiblity()
+      private static void OnHostingPageChanged(BindableObject bindable, object oldvalue, object newvalue)
       {
-         if (_backButton == null)
+         if (bindable is NavAndMenuBar bindableAsNavAndMenuBar)
          {
-            return;
+            bindableAsNavAndMenuBar.HostingPage = newvalue as Page;
          }
-
-         _backButton.IsVisible = IsNavigationAvailable;
       }
 
-      private void MenuButtonTapped(object sender, EventArgs e)
-      {
-         if (_menuButtonEntered)
-         {
-            return;
-         }
-
-         _menuButtonEntered = true;
-
-         // Notify the host page so it can close the menu.
-         // Ask to close the menu as if the user tapped the hamburger icon.
-         FormsMessengerUtils.Send(new NavBarMenuTappedMessage());
-
-         _menuButtonEntered = false;
-      }
-
-      private void BackButtonTapped(object sender, EventArgs eventArgs)
-      {
-         // Navigate back if possible -- should not be tappable if we cannot go back
-         if (IsNavigationAvailable)
-         {
-            // Remove the top app state the stack
-            var nextAppState = _appStateBackButtonStack.Pop();
-
-            // Get the app state;
-            // Do not add to the back stack, since we are going backwards
-            _stateMachine.GoToAppState<NoPayload>(nextAppState, null, true);
-         }
-
-         SetBackButtonVisiblity();
-      }
-
-      private void ReleaseUnmanagedResources()
-      {
-         AskToSetBackButtonVisiblity -= SetBackButtonVisiblity;
-
-         RemoveButtonTappedListeners(_backButton, BackButtonTapped);
-
-         RemoveButtonTappedListeners(_menuButton, MenuButtonTapped);
-      }
-
-      private void RemoveButtonTappedListeners(Image imageButton, EventHandler buttonTapped)
+      private static void RemoveButtonTappedListeners(Image imageButton, EventHandler buttonTapped)
       {
          if (imageButton.GestureRecognizers.IsNotEmpty())
          {
@@ -314,9 +261,102 @@ namespace SharedForms.Views.SubViews
          }
       }
 
-      ~NavAndMenuBar()
+      private void BackButtonTapped(object sender, EventArgs eventArgs)
       {
-         ReleaseUnmanagedResources();
+         // Navigate back if possible -- should not be tappable if we cannot go back
+         if (IsNavigationAvailable)
+         {
+            // Remove the top app state the stack
+            var nextAppState = _appStateBackButtonStack.Pop();
+
+            // Get the app state; Do not add to the back stack, since we are going backwards
+            _stateMachine.GoToAppState<NoPayload>(nextAppState, null, true);
+         }
+
+         SetBackButtonVisiblity();
       }
+
+      private Image CreateNavBarButton(string imagePath, EventHandler menuButtonTapped)
+      {
+         var retImage = FormsUtils.GetImage(imagePath, height: BUTTON_HEIGHT);
+
+         var imageTap = new TapGestureRecognizer();
+         imageTap.Tapped += menuButtonTapped;
+         retImage.GestureRecognizers.Add(imageTap);
+         retImage.VerticalOptions = LayoutOptions.Center;
+
+         return retImage;
+      }
+
+      private void MenuButtonTapped(object sender, EventArgs e)
+      {
+         if (_menuButtonEntered)
+         {
+            return;
+         }
+
+         _menuButtonEntered = true;
+
+         // Notify the host page so it can close the menu. Ask to close the menu as if the user
+         // tapped the hamburger icon.
+         FormsMessengerUtils.Send(new NavBarMenuTappedMessage());
+
+         _menuButtonEntered = false;
+      }
+
+      private void OnHostingPageBindingContextChanged(object sender, EventArgs e)
+      {
+         SetUpHostingBindingContexts();
+      }
+
+      private void OnMenuLoaded(object sender, MenuLoadedMessage args)
+      {
+         IsMenuLoaded = true;
+      }
+
+      private void ReleaseUnmanagedResources()
+      {
+         AskToSetBackButtonVisiblity -= SetBackButtonVisiblity;
+
+         RemoveButtonTappedListeners(_backButton, BackButtonTapped);
+
+         RemoveButtonTappedListeners(_menuButton, MenuButtonTapped);
+      }
+
+      private void RemoveHostingPageBindingContextChangedHandler()
+      {
+         if (_hostingPage != null)
+         {
+            _hostingPage.BindingContextChanged -= OnHostingPageBindingContextChanged;
+         }
+      }
+
+      private void SetBackButtonVisiblity()
+      {
+         if (_backButton == null)
+         {
+            return;
+         }
+
+         _backButton.IsVisible = IsNavigationAvailable;
+      }
+
+      private void SetUpHostingBindingContexts()
+      {
+         BindingContext = _hostingPage.BindingContext;
+         _menuButton.BindingContext = this;
+         _titleLabel.BindingContext = _hostingPage.BindingContext;
+      }
+
+      #endregion Private Methods
+   }
+
+   public interface INavAndMenuBar : IDisposable
+   {
+      #region Public Properties
+
+      Page HostingPage { get; set; }
+
+      #endregion Public Properties
    }
 }

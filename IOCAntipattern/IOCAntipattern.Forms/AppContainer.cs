@@ -39,7 +39,7 @@ namespace IOCAntipattern.Forms
          // Maintains only a single instance, but might cause problems with disposal
          //containerBuilder.RegisterType<MainViewModel>().As<IMainViewModel>().SingleInstance();
          //containerBuilder.RegisterType<SecondViewModel>().As<ISecondViewModel>().SingleInstance();
-
+         
          // Normal usage
          //containerBuilder.RegisterType<MainViewModel>().As<IMainViewModel>();
          //containerBuilder.RegisterType<SecondViewModel>().As<ISecondViewModel>();

@@ -33,7 +33,6 @@ namespace MvvmAntipattern.Forms.Views.Pages
    using Xamarin.Forms.Plugin.CustomToggleButton;
 
    public class AnimalStage : MenuNavPageBase<IAnimalViewModelBase>
-
    {
       protected override View ConstructPageView()
       {
@@ -75,7 +74,7 @@ namespace MvvmAntipattern.Forms.Views.Pages
             TextColor = Color.Gray
          };
          stackLayout.Children.Add(bigLabel);
-         // var iAmBigSwitch = new Switch { HorizontalOptions = LayoutOptions.Center, WidthRequest = 75, HeightRequest = 30, InputTransparent = false };
+
          var iAmBigSwitch = 
             new CustomToggleButton
                {

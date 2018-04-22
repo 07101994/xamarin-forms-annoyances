@@ -26,11 +26,11 @@
 
 namespace MvvmAntipattern.Forms.ViewModels
 {
-   using Common.Interfaces;
    using Common.Navigation;
-   using Models;
    using PropertyChanged;
+   using SharedForms.Common.Interfaces.Samples;
    using SharedForms.Common.Navigation;
+   using SharedForms.Models.Samples;
    using Xamarin.Forms;
 
    [AddINotifyPropertyChangedInterface]
@@ -46,7 +46,7 @@ namespace MvvmAntipattern.Forms.ViewModels
       public override string LikeToEat => "";
 
       /// <summary>
-      /// Bury this; nwe don't use it
+      /// Bury this; we don't use it
       /// </summary>
       public override string MyImageSource => "";
    }

@@ -28,11 +28,11 @@ namespace MvvmAntipattern.Forms.ViewModels
 {
    using System.ComponentModel;
    using System.Runtime.CompilerServices;
-   using Common.Interfaces;
-   using Models;
    using PropertyChanged;
    using SharedForms.Common.Interfaces;
+   using SharedForms.Common.Interfaces.Samples;
    using SharedForms.Common.Navigation;
+   using SharedForms.Models.Samples;
    using SharedForms.ViewModels;
    using Xamarin.Forms;
 
@@ -75,7 +75,7 @@ namespace MvvmAntipattern.Forms.ViewModels
       }
 
       /// <summary>
-      /// AnimalData cxould be null...
+      /// AnimalData could be null...
       /// </summary>
       public virtual string MyImageSource => _animalData?.GetAnimalImageSource(this);
 

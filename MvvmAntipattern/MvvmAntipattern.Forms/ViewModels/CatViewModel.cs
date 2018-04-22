@@ -26,11 +26,11 @@
 
 namespace MvvmAntipattern.Forms.ViewModels
 {
-   using Common.Interfaces;
    using Common.Navigation;
-   using Models;
    using PropertyChanged;
+   using SharedForms.Common.Interfaces.Samples;
    using SharedForms.Common.Navigation;
+   using SharedForms.Models.Samples;
    using Xamarin.Forms;
 
    [AddINotifyPropertyChangedInterface]
