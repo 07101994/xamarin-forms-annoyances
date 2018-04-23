@@ -36,6 +36,14 @@ namespace SharedForms.Views.SubViews
    {
       #region Public Variables
 
+      public static readonly double MENU_OUTSIDE_SINGLE_MARGIN = 15.0;
+
+      public static readonly double MENU_INSIDE_SINGLE_MARGIN = MENU_OUTSIDE_SINGLE_MARGIN / 2;
+
+      public static readonly Thickness MENU_OUTSIDE_MARGIN = new Thickness(MENU_OUTSIDE_SINGLE_MARGIN);
+
+      public static readonly double MENU_ITEM_WIDTH = 120.0;
+
       public static readonly double MENU_GROSS_WIDTH = MENU_ITEM_WIDTH + 2 * MENU_OUTSIDE_SINGLE_MARGIN;
 
       #endregion Public Variables
@@ -68,15 +76,7 @@ namespace SharedForms.Views.SubViews
 
       private static readonly double MAIN_MENU_OPACITY = 0.95;
 
-      private static readonly double MENU_INSIDE_SINGLE_MARGIN = MENU_OUTSIDE_SINGLE_MARGIN / 2;
-
       private static readonly double MENU_ITEM_HEIGHT = 40.0;
-
-      private static readonly double MENU_ITEM_WIDTH = 120.0;
-
-      private static readonly Thickness MENU_OUTSIDE_MARGIN = new Thickness(MENU_OUTSIDE_SINGLE_MARGIN);
-
-      private static readonly double MENU_OUTSIDE_SINGLE_MARGIN = 15.0;
 
       private readonly IStateMachineBase _stateMachine;
 

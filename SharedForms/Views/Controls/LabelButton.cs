@@ -37,222 +37,41 @@ namespace SharedForms.Views.Controls
 
    public interface ILabelButton : IGenericViewButtonBase<Label>
    {
-      string LabelBindingName { get; set; }
-
-      IValueConverter LabelBindingConverter { get; set; }
-
-      object LabelBindingConverterParameter { get; set; }
-
-      Style SelectedLabelStyle { get; set; }
-
-      Style DeselectedLabelStyle { get; set; }
-
-      Style DisabledLabelStyle { get; set; }
    }
 
    public class LabelButton : GenericViewButtonBase<Label>, ILabelButton
    {
-      public static readonly BindableProperty LabelButtonBindingNameProperty =
-         CreateLabelButtonBindableProperty
-         (
-            nameof(LabelBindingName),
-            default(string),
-            BindingMode.OneWay,
-            (labelButton, oldVal, newVal) => { labelButton.LabelBindingName = newVal; }
-         );
-
-      public static readonly BindableProperty LabelButtonConverterProperty =
-         CreateLabelButtonBindableProperty
-         (
-            nameof(LabelBindingConverter),
-            default(IValueConverter),
-            BindingMode.OneWay,
-            (labelButton, oldVal, newVal) => { labelButton.LabelBindingConverter = newVal; }
-         );
-
-      public static readonly BindableProperty LabelButtonConverterParameterProperty =
-         CreateLabelButtonBindableProperty
-         (
-            nameof(LabelBindingConverterParameter),
-            default(object),
-            BindingMode.OneWay,
-            (labelButton, oldVal, newVal) => { labelButton.LabelBindingConverterParameter = newVal; }
-         );
-
-      public static readonly BindableProperty SelectedLabelStyleProperty =
-         CreateLabelButtonBindableProperty
-         (
-            nameof(SelectedLabelStyle),
-            default(Style),
-            BindingMode.OneWay,
-            (labelButton, oldVal, newVal) => { labelButton.SelectedLabelStyle = newVal; }
-         );
-
-      public static readonly BindableProperty DeselectedLabelStyleProperty =
-         CreateLabelButtonBindableProperty
-         (
-            nameof(DeselectedLabelStyle),
-            default(Style),
-            BindingMode.OneWay,
-            (labelButton, oldVal, newVal) => { labelButton.DeselectedLabelStyle = newVal; }
-         );
-
-      public static readonly BindableProperty DisabledLabelStyleProperty =
-         CreateLabelButtonBindableProperty
-         (
-            nameof(DisabledLabelStyle),
-            default(Style),
-            BindingMode.OneWay,
-            (labelButton, oldVal, newVal) => { labelButton.DisabledLabelStyle = newVal; }
-         );
-
       private Style _deselectedLabelButtonStyle;
-
       private Style _disabledLabelButtonStyle;
-      //---------------------------------------------------------------------------------------------------------------
-      // VARIABLES
-      //---------------------------------------------------------------------------------------------------------------
-
-      private IValueConverter _labelBindingConverter;
-      private object _labelBindingConverterParameter;
-      private string _labelBindingName;
       private Style _selectedLabelButtonStyle;
 
-      //---------------------------------------------------------------------------------------------------------------
-      // CONSTRUCTOR
-      //---------------------------------------------------------------------------------------------------------------
-
-      /// <summary>
-      /// These parameters are for the *deselected* state, but are generally shared with the other states.
-      /// </summary>
       public LabelButton
       (
-         string labelText = default(string),
-         double fontSize = default(double),
-         FontAttributes fontAttributes = default(FontAttributes),
-         Color fontColor = default(Color),
-         TextAlignment horizontalAlignment = TextAlignment.Center,
-         TextAlignment verticalAlignment = TextAlignment.Center,
-         LineBreakMode lineBreaks = LineBreakMode.TailTruncation,
-         string labelBindingPropertyName = default(string),
-         IValueConverter labelBindingConverter = null,
-         object labelBindingConverterParameter = null,
-         Color backColor = default(Color),
-         double? buttonWidth = null,
-         double? buttonHeight = null,
-         double? cornerRadius = null,
-         double? cornerRadiusFactor = null,
-         double? borderWidth = null,
-         Color borderColor = default(Color),
-         string commandBindingPropertyName = default(string),
-         IValueConverter commandBindingConverter = null,
-         object commandBindingConverterParameter = null,
-         object commandBindingSource = null,
-         bool canSelect = true
+         Label label
       )
-         : base
-         (
-            backColor,
-            buttonWidth,
-            buttonHeight,
-            cornerRadius,
-            cornerRadiusFactor,
-            borderWidth,
-            borderColor,
-            commandBindingPropertyName,
-            commandBindingConverter,
-            commandBindingConverterParameter,
-            commandBindingSource,
-            canSelect
-         )
       {
-         if (fontColor.IsAnEqualObjectTo(default(Color)))
-         {
-            fontColor = Color.Black;
-         }
+          if (label == null)
+          {
+             label = new Label();
+          }
 
-         var calculatedFontSize =
-            fontSize.IsNotEmpty()
-               ? fontSize
-               : FormsUtils.DEFAULT_TEXT_SIZE;
+         label.InputTransparent = true;
 
-         // Set up the label with the deselected defaults -- it's easy because it just calls control utils
-         InternalView =
-            new Label
-            {
-               Text = labelText,
-               HorizontalOptions = LayoutOptions.FillAndExpand,
-               VerticalOptions = LayoutOptions.CenterAndExpand,
-               HorizontalTextAlignment = horizontalAlignment,
-               VerticalTextAlignment = verticalAlignment,
-               LineBreakMode = lineBreaks,
-               TextColor = fontColor,
-               FontSize = Convert.ToSingle(calculatedFontSize),
-               InputTransparent = true
-            };
-
-         if (fontAttributes.IsNotAnEqualObjectTo(default(FontAttributes)))
-         {
-            InternalView.FontAttributes = fontAttributes;
-         }
-
-         // Set up the label text binding (if provided)
-         if (labelBindingPropertyName.IsNotEmpty())
-         {
-            InternalView.SetUpBinding(Label.TextProperty, labelBindingPropertyName, BindingMode.OneWay,
-               labelBindingConverter, labelBindingConverterParameter);
-         }
-         else
-         {
-            Debug.WriteLine("LABEL BUTTON: Cannot set up label binding!");
-         }
-
-         // Set the fields so the properties do not react
-         _labelBindingName = labelBindingPropertyName;
-         _labelBindingConverter = labelBindingConverter;
-         _labelBindingConverterParameter = labelBindingConverterParameter;
+         InternalView = label;
 
          // The label always has a transparent background
          BackgroundColor = Color.Transparent;
+
+         // Applies to the base control only
          InputTransparent = false;
 
          // Force-refresh the label styles; this will configure the label properly
          SetStyle();
       }
 
-      //---------------------------------------------------------------------------------------------------------------
-      // PROPERTIES - Public
-      //---------------------------------------------------------------------------------------------------------------
-
-      public IValueConverter LabelBindingConverter
+      public LabelButton()
+      : this(null)
       {
-         get => _labelBindingConverter;
-         set
-         {
-            _labelBindingConverter = value;
-            SetUpCompleteLabelButtonBinding();
-         }
-      }
-
-      public string LabelBindingName
-      {
-         get => _labelBindingName;
-         set
-         {
-            _labelBindingName = value;
-
-            SetUpCompleteLabelButtonBinding();
-         }
-      }
-
-      public object LabelBindingConverterParameter
-      {
-         get => _labelBindingConverterParameter;
-         set
-         {
-            _labelBindingConverterParameter = value;
-            SetUpCompleteLabelButtonBinding();
-         }
       }
 
       public Style SelectedLabelStyle
@@ -283,18 +102,6 @@ namespace SharedForms.Views.Controls
             _disabledLabelButtonStyle = value;
             SetStyle();
          }
-      }
-
-      //---------------------------------------------------------------------------------------------------------------
-      // METHODS - Protected
-      //---------------------------------------------------------------------------------------------------------------
-
-      protected override void AfterInternalViewSet()
-      {
-         base.AfterInternalViewSet();
-
-         // If the view gets set after the bindings, those bindings must be set up now.
-         SetUpCompleteLabelButtonBinding();
       }
 
       protected override void SetStyle()
@@ -333,27 +140,6 @@ namespace SharedForms.Views.Controls
          }
       }
 
-      //---------------------------------------------------------------------------------------------------------------
-      // METHODS - Private
-      //---------------------------------------------------------------------------------------------------------------
-
-      private void SetUpCompleteLabelButtonBinding()
-      {
-         if (LabelBindingName.IsEmpty())
-         {
-            InternalView?.RemoveBinding(Label.TextProperty);
-         }
-         else
-         {
-            InternalView?.SetUpBinding(Label.TextProperty, LabelBindingName, BindingMode.OneWay,
-               LabelBindingConverter, LabelBindingConverterParameter);
-         }
-      }
-
-      //---------------------------------------------------------------------------------------------------------------
-      // STATIC READ ONLY VARIABLES & METHODS
-      //---------------------------------------------------------------------------------------------------------------
-
       public static Style CreateLabelStyle
       (
          Color textColor,
@@ -376,10 +162,6 @@ namespace SharedForms.Views.Controls
             }
          };
       }
-
-      //---------------------------------------------------------------------------------------------------------------
-      // BINDABLE PROPERTIES
-      //---------------------------------------------------------------------------------------------------------------
 
       public static BindableProperty CreateLabelButtonBindableProperty<PropertyTypeT>
       (

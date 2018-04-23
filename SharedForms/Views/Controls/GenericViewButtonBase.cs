@@ -21,9 +21,7 @@
 
 #endregion License
 
-#define HACK_XAMARIN_SELECTION_BUG
 #define CALL_FORCE_STYLE
-// #define ANIMATE #define HACK_BROKEN_BUTTON_STATE_BINDINGS
 
 namespace SharedForms.Views.Controls
 {
@@ -69,6 +67,8 @@ namespace SharedForms.Views.Controls
       bool CanSelect { get; set; }
 
       bool ToggleSelection { get; set; }
+
+      Color BackColor { get; set; }
    }
 
    /// <summary>
@@ -180,6 +180,33 @@ namespace SharedForms.Views.Controls
             (viewButton, oldVal, newVal) => { viewButton.CornerRadiusFactor = newVal; }
          );
 
+      public static readonly BindableProperty BackColorProperty =
+         CreateGenericViewButtonBindableProperty
+         (
+            nameof(BackColor),
+            default(Color),
+            BindingMode.OneWay,
+            (viewButton, oldVal, newVal) => { viewButton.BackColor = newVal; }
+         );
+
+      public static readonly BindableProperty CanSelectProperty =
+         CreateGenericViewButtonBindableProperty
+         (
+            nameof(CanSelect),
+            default(bool),
+            BindingMode.OneWay,
+            (viewButton, oldVal, newVal) => { viewButton.CanSelect = newVal; }
+         );
+
+      public static readonly BindableProperty ToggleSelectionProperty =
+         CreateGenericViewButtonBindableProperty
+         (
+            nameof(ToggleSelection),
+            default(bool),
+            BindingMode.OneWay,
+            (viewButton, oldVal, newVal) => { viewButton.ToggleSelection = newVal; }
+         );
+
       //---------------------------------------------------------------------------------------------------------------
       // VARIABLES
       //---------------------------------------------------------------------------------------------------------------
@@ -196,8 +223,6 @@ namespace SharedForms.Views.Controls
 
       private object _buttonCommandSource;
 
-      private ButtonStates _buttonState;
-
       private double? _cornerRadiusFactor;
 
       private double? _cornerRadiusFixed;
@@ -206,114 +231,36 @@ namespace SharedForms.Views.Controls
 
       private Style _disabledStyle;
 
-      private T _internalView;
       private volatile bool _internalViewEntered;
 
       private Style _selectedStyle;
 
       private int _selectionGroup;
+
       private volatile bool _tappedListenerEntered;
+
       private volatile bool _isReleasing;
 
       //---------------------------------------------------------------------------------------------------------------
       // CONSTRUCTOR
       //---------------------------------------------------------------------------------------------------------------
 
-      protected GenericViewButtonBase
-      (
-         Color backColor = default(Color),
-         double? buttonWidth = null,
-         double? buttonHeight = null,
-         double? cornerRadiusFixed = null,
-         double? cornerRadiusFactor = null,
-         double? borderWidth = null,
-         Color borderColor = default(Color),
-         string commandBindingPropertyName = default(string),
-         IValueConverter commandBindingConverter = null,
-         object commandBindingConverterParameter = null,
-         object commandBindingSource = null,
-         bool canSelect = true,
-         int polygonSideCount = 0
-      )
+      protected GenericViewButtonBase()
       {
-         CanSelect = canSelect;
-
-         if (backColor.IsAnEqualObjectTo(default(Color)))
-         {
-            backColor = Color.Transparent;
-         }
-
-         // TODO -is this used - ??? BackgroundColor = backColor;
-         Color = backColor;
-
-         _cornerRadiusFixed = cornerRadiusFixed;
-         _cornerRadiusFactor = cornerRadiusFactor;
-
-         SetCornerRadius();
-
-         if (borderWidth.HasValue)
-         {
-            BorderWidth = Convert.ToSingle(borderWidth.GetValueOrDefault());
-         }
-
-         if (borderColor.IsNotAnEqualObjectTo(default(Color)))
-         {
-            BorderColor = borderColor;
-         }
-
-         // Set the fields so the properties do not react
-         _buttonCommandBindingName = commandBindingPropertyName;
-         _buttonCommandConverter = commandBindingConverter;
-         _buttonCommandConverterParameter = commandBindingConverterParameter;
-         _buttonCommandSource = commandBindingSource;
-
-         SetUpCompleteViewButtonCommandBinding();
-
          IAmSelectedStatic += HandleStaticSelectionChanges;
 
          GestureRecognizers.Add(_tapGesture);
          _tapGesture.Tapped += HandleTapGestureTapped;
 
-         if (buttonWidth.HasNoValue())
-         {
-            buttonWidth = FormsUtils.MAJOR_BUTTON_WIDTH;
-         }
-
-         if (buttonWidth.HasValue)
-         {
-            WidthRequest = buttonWidth.GetValueOrDefault();
-         }
-
-         if (buttonHeight.HasNoValue())
-         {
-            buttonHeight = FormsUtils.MAJOR_BUTTON_HEIGHT;
-         }
-
-         if (buttonHeight.HasValue)
-         {
-            HeightRequest = buttonHeight.GetValueOrDefault();
-         }
-
-         if ((buttonWidth.HasValue || buttonHeight.HasValue) && polygonSideCount > 0)
-         {
-            ShapeType = ShapeType.Path;
-            Points = CreatePolygonPoints(polygonSideCount,
-               buttonWidth.HasValue ? buttonWidth.GetValueOrDefault() : buttonHeight.GetValueOrDefault(),
-               borderWidth.GetValueOrDefault());
-         }
-         else
-         {
-            ShapeType = ShapeType.Box;
-         }
+         ShapeType = ShapeType.Box;
 
          SetStyle();
+
+         // We could specify the properties, but there are *many* that affect style
+         PropertyChanged += (sender, args) => { SetStyle(); };
       }
 
       public event EventUtils.NoParamsDelegate ViewButtonPressed;
-
-#if HACK_BROKEN_BUTTON_STATE_BINDINGS
-      public event EventUtils.GenericDelegate<ButtonStates> ButtonStateChanged;
-#endif
 
       //---------------------------------------------------------------------------------------------------------------
       // PROPERTIES (Public)
@@ -322,6 +269,12 @@ namespace SharedForms.Views.Controls
       public bool CanSelect { get; set; }
 
       public bool ToggleSelection { get; set; }
+
+      public Color BackColor
+      {
+         get => base.Color;
+         set => base.Color = value;
+      }
 
       public Command ButtonCommand
       {
@@ -405,7 +358,7 @@ namespace SharedForms.Views.Controls
 
       public T InternalView
       {
-         get => _internalView;
+         get => Content as T;
          set
          {
             if (_internalViewEntered || _isReleasing)
@@ -415,13 +368,9 @@ namespace SharedForms.Views.Controls
 
             _internalViewEntered = true;
 
-            _internalView = value;
-
-            //if (_internalView != null)
-            //{
             try
             {
-               Content = _internalView;
+               Content = value;
 
                AfterInternalViewSet();
             }
@@ -429,7 +378,6 @@ namespace SharedForms.Views.Controls
             {
                Debug.WriteLine("INTERNAL VIEW ASSIGNMENT ERROR ->" + e.Message + "<-");
             }
-            //}
 
             _internalViewEntered = false;
          }
@@ -592,9 +540,6 @@ namespace SharedForms.Views.Controls
          }
       }
 
-      /// <summary>
-      /// Set IsEnabled based on the command can execute
-      /// </summary>
       private void HandleButtonCommandCanExecuteChanged(object sender, EventArgs e)
       {
          var newCanExecute = sender is Command senderAsCommand && senderAsCommand.CanExecute(this);
@@ -606,9 +551,6 @@ namespace SharedForms.Views.Controls
          SetStyle();
       }
 
-      /// <summary>
-      /// Listens as an *instance* to a *static* event
-      /// </summary>
       private void HandleStaticSelectionChanges(IGenericViewButtonBase<T> sender)
       {
          // Do not recur onto our own broadcast; also only respond to the same selection group.
@@ -627,6 +569,8 @@ namespace SharedForms.Views.Controls
          }
 
          _tappedListenerEntered = true;
+
+         ViewButtonPressed?.Invoke();
 
          if (CanSelect)
          {
@@ -689,53 +633,11 @@ namespace SharedForms.Views.Controls
          }
       }
 
-      private static Point DegreesToXY(float degrees, float radius, Point origin)
-      {
-         var xy = new Point();
-         var radians = degrees * Math.PI / 180.0;
-
-         xy.X = (int) (Math.Cos(radians) * radius + origin.X);
-         xy.Y = (int) (Math.Sin(-radians) * radius + origin.Y);
-
-         return xy;
-      }
-
-      private static Point[] CalculateVertices(int sides, int radius, int startingAngle, Point center)
-      {
-         if (sides < 3)
-         {
-            throw new ArgumentException("Polygon must have 3 sides or more.");
-         }
-
-         var points = new List<Point>();
-         var step = 360.0f / sides;
-
-         float angle = startingAngle; //starting angle
-         for (double i = startingAngle; i < startingAngle + 360.0; i += step) //go in a full circle
-         {
-            points.Add(DegreesToXY(angle, radius, center)); //code snippet from above
-            angle += step;
-         }
-
-         return points.ToArray();
-      }
-
       private void HandleButtonStateChanged()
       {
          SetStyle();
          BroadcastIfSelected();
-         ButtonStateChanged?.Invoke(this, _buttonState);
-      }
-
-      public static ObservableCollection<Point> CreatePolygonPoints(int sideCount, double widthHeight,
-         double borderWidth)
-      {
-         var radius = (widthHeight / 2 - borderWidth).ToRoundedInt();
-
-         return new ObservableCollection<Point>
-         (
-            CalculateVertices(sideCount, radius, 360 / sideCount / 2, new Point(radius, radius))
-         );
+         ButtonStateChanged?.Invoke(this, ButtonState);
       }
 
       //---------------------------------------------------------------------------------------------------------------

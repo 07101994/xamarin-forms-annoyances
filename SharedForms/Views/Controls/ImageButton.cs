@@ -36,49 +36,8 @@ namespace SharedForms.Views.Controls
    {
       #region Public Constructors
 
-      /// <summary>
-      /// These parameters are for the *deselected* state, but are generally shared with the other states.
-      /// </summary>
-      public ImageButton
-      (
-         string imageFileNameRoot,
-         double imageWidth = 0,
-         double imageHeight = 0,
-         Color backColor = default(Color),
-         double? buttonWidth = null,
-         double? buttonHeight = null,
-         double? cornerRadius = null,
-         double? cornerRadiusFactor = null,
-         double? borderWidth = null,
-         Color borderColor = default(Color),
-         string commandBindingPropertyName = default(string),
-         IValueConverter commandBindingConverter = null,
-         object commandBindingConverterParameter = null,
-         object commandBindingSource = null,
-         bool canSelect = true,
-         int polygonSideCount = 0
-      )
-         : base
-         (
-            backColor,
-            buttonWidth,
-            buttonHeight,
-            cornerRadius,
-            cornerRadiusFactor,
-            borderWidth,
-            borderColor,
-            commandBindingPropertyName,
-            commandBindingConverter,
-            commandBindingConverterParameter,
-            commandBindingSource,
-            canSelect,
-            polygonSideCount
-         )
+      public ImageButton()
       {
-         _imageFileNameRoot = imageFileNameRoot;
-         _imageWidth = imageWidth;
-         _imageHeight = imageHeight;
-
          // Force-refresh the image styles; this will configure the Image properly
          SetStyle();
       }
@@ -120,10 +79,6 @@ namespace SharedForms.Views.Controls
 
       #endregion Protected Methods
 
-      //---------------------------------------------------------------------------------------------------------------
-      // CONSTRUCTOR
-      //---------------------------------------------------------------------------------------------------------------
-
       #region Public Variables
 
       public static readonly BindableProperty ImageFileNameRootProperty =
@@ -135,6 +90,9 @@ namespace SharedForms.Views.Controls
             (imageButton, oldVal, newVal) => { imageButton.ImageFileNameRoot = newVal; }
          );
 
+      //---------------------------------------------------------------------------------------------------------------
+      // CONSTRUCTOR
+      //---------------------------------------------------------------------------------------------------------------
       //---------------------------------------------------------------------------------------------------------------
       // CONSTANTS
       //---------------------------------------------------------------------------------------------------------------
@@ -181,10 +139,6 @@ namespace SharedForms.Views.Controls
 
       #endregion Private Variables
 
-      //---------------------------------------------------------------------------------------------------------------
-      // METHODS - Protected
-      //---------------------------------------------------------------------------------------------------------------
-
       #region Public Properties
 
       //---------------------------------------------------------------------------------------------------------------
@@ -203,6 +157,9 @@ namespace SharedForms.Views.Controls
          }
       }
 
+      //---------------------------------------------------------------------------------------------------------------
+      // METHODS - Protected
+      //---------------------------------------------------------------------------------------------------------------
       public double ImageHeight
       {
          get => _imageHeight;

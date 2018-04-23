@@ -1,43 +1,55 @@
 ﻿#region License
 
 // MIT License
-//
-// Copyright (c) 2018 Marcus Technical Services, Inc. http://www.marcusts.com
-//
-// Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
-// associated documentation files (the "Software"), to deal in the Software without restriction,
-// including without limitation the rights to use, copy, modify, merge, publish, distribute,
-// sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is
+// 
+// Copyright (c) 2018 
+// Marcus Technical Services, Inc.
+// http://www.marcusts.com
+// 
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
 // furnished to do so, subject to the following conditions:
-//
-// The above copyright notice and this permission notice shall be included in all copies or
-// substantial portions of the Software.
-//
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT
-// NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
-// NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
-// DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT
-// OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+// 
+// The above copyright notice and this permission notice shall be included in all
+// copies or substantial portions of the Software.
+// 
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
 
 #endregion License
+
+#define STORE_PAGE_MENU_STATICALLY
 
 namespace SharedForms.Views.Pages
 {
    #region Imports
 
+   using System.Threading.Tasks;
    using Autofac;
+   using Common.Navigation;
    using Common.Utils;
    using PropertyChanged;
    using SharedGlobals.Container;
    using SubViews;
-   using System.Threading.Tasks;
    using ViewModels;
    using Xamarin.Forms;
 
-   #endregion Imports
+   #endregion
+
+   public interface IMenuNavPageBase : ITypeSafePageBase
+   {
+   }
 
    /// <summary>
-   /// A page with a navigation header.
+   ///    A page with a navigation header.
    /// </summary>
    [AddINotifyPropertyChangedInterface]
    public abstract class MenuNavPageBase<InterfaceT> : TypeSafePageBase<InterfaceT>, IMenuNavPageBase
@@ -49,7 +61,9 @@ namespace SharedForms.Views.Pages
       {
          // Do not use "BeginLifetimeScope" because it does not seem to work. Also, the menu is
          // global for the life of the app.
+#if !STORE_PAGE_MENU_STATICALLY
          PageMenu = AppContainer.GlobalVariableContainer.Resolve<IMainMenu>();
+#endif
 
          FormsMessengerUtils.Subscribe<NavBarMenuTappedMessage>(this, OnMainMenuItemSelected);
 
@@ -74,6 +88,8 @@ namespace SharedForms.Views.Pages
 
       #endregion Protected Constructors
 
+#if STORE_PAGE_MENU_STATICALLY
+
       #region Private Variables
 
       private const int MENU_ANIMATE_MILLISECONDS = 400;
@@ -88,7 +104,23 @@ namespace SharedForms.Views.Pages
 
       #endregion Private Variables
 
+      #region Public Constructors
+
+      static MenuNavPageBase()
+      {
+         var stateMachine = AppContainer.GlobalVariableContainer.Resolve<IStateMachineBase>();
+         PageMenu = new MainMenu(stateMachine);
+      }
+
+      #endregion Public Constructors
+
+#endif
+
       #region Protected Properties
+
+      protected
+         static
+         IMainMenu PageMenu { get; set; }
 
       protected bool IsPageMenuShowing
       {
@@ -109,8 +141,6 @@ namespace SharedForms.Views.Pages
             );
          }
       }
-
-      protected IMainMenu PageMenu { get; set; }
 
       protected View PageMenuView => PageMenu as View;
 
@@ -150,7 +180,7 @@ namespace SharedForms.Views.Pages
       #region Private Methods
 
       /// <summary>
-      /// Animates the panel in our out depending on the state
+      ///    Animates the panel in our out depending on the state
       /// </summary>
       private async Task AnimatePageMenu()
       {
@@ -199,9 +229,5 @@ namespace SharedForms.Views.Pages
       }
 
       #endregion Private Methods
-   }
-
-   public interface IMenuNavPageBase : ITypeSafePageBase
-   {
    }
 }

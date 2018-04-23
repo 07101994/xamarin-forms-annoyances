@@ -19,10 +19,10 @@
       {
          base.RegisterDependencies(containerBuilder);
 
-         // This is a single injection of a global state machine. It is not intended to be replacded during the life of the app.
+         // This is a single injection of a global state machine. It is not intended to be replaced during the life of the app.
          containerBuilder.RegisterType<FormsStateMachine>().As<IStateMachineBase>().SingleInstance();
 
-         // This is a single injection of a global menu system. It is not intended to be replacded during the life of the app.
+         // This is a single injection of a global menu system. It is not intended to be replaced during the life of the app.
          containerBuilder.RegisterType<MainMenu>().As<IMainMenu>().SingleInstance();
       }
    }

@@ -25,7 +25,6 @@ namespace SharedForms.Common.Utils
 {
    #region Imports
 
-   using ViewModels;
    using Views.Controls;
    using Xamarin.Forms;
 

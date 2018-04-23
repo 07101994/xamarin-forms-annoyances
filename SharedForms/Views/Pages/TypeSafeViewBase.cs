@@ -1,5 +1,4 @@
-﻿#region License
-
+﻿
 // MIT License
 //
 // Copyright (c) 2018 Marcus Technical Services, Inc. http://www.marcusts.com
@@ -19,17 +18,20 @@
 // DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT
 // OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-#endregion License
-
 namespace SharedForms.Views.Pages
 {
-   #region Imports
 
    using Common.Interfaces;
    using Common.Utils;
    using Xamarin.Forms;
 
-   #endregion Imports
+   /// <remarks>
+   /// WARNING: .Net does not provide an IContentView interface, so we cannot reference the view from
+   ///          this interface without a hard cast!
+   /// </remarks>
+   public interface ITypeSafeViewBase : IReceivePageEvents
+   {
+   }
 
    /// <summary>
    /// A base class for content views that protects the type safety of the binding context.
@@ -42,16 +44,6 @@ namespace SharedForms.Views.Pages
    public abstract class TypeSafeViewBase<InterfaceT> : ContentView, ITypeSafeViewBase
       where InterfaceT : class
    {
-      #region Protected Constructors
-
-      protected TypeSafeViewBase(IProvidePageEvents pageEventProvider = null)
-      {
-         PageEventProvider = pageEventProvider;
-         BackgroundColor = Color.Transparent;
-         Content = ConstructView();
-      }
-
-      #endregion Protected Constructors
 
       #region Private Variables
 
@@ -60,6 +52,23 @@ namespace SharedForms.Views.Pages
       private IProvidePageEvents _pageEventProvider;
 
       #endregion Private Variables
+
+      #region Protected Constructors
+
+      protected TypeSafeViewBase(IProvidePageEvents pageEventProvider = null)
+      {
+         PageEventProvider = pageEventProvider;
+         BackgroundColor = Color.Transparent;
+
+         // Resharper doesn't like the derived methods in the constructor, but there's not much we can do about it.
+         // We could move this to the page events and catch the page OnAppearing, but if our page event provider is null, that will not occur.
+         // ReSharper disable once VirtualMemberCallInConstructor
+#pragma warning disable CC0067 // Virtual Method Called On Constructor
+         Content = ConstructView();
+#pragma warning restore CC0067 // Virtual Method Called On Constructor
+      }
+
+      #endregion Protected Constructors
 
       #region Public Properties
 
@@ -146,13 +155,6 @@ namespace SharedForms.Views.Pages
       }
 
       #endregion Private Methods
-   }
 
-   /// <remarks>
-   /// WARNING: .Net does not provide an IContentView interface, so we cannot reference the view from
-   ///          this interface without a hard cast!
-   /// </remarks>
-   public interface ITypeSafeViewBase : IReceivePageEvents
-   {
    }
 }
