@@ -6,7 +6,7 @@
    x:Class="AwaitAsyncAntipattern.Forms.Views.Controls.SimpleListView"
    BackgroundColor="White"
    SeparatorVisibility="Default"
-   SeparatorColor="{x:Static utils:Colors.PALE_GRAY}"
+   SeparatorColor="{x:Static utils:ColorUtils.PALE_GRAY}"
    RowHeight="18"
    HorizontalOptions="FillAndExpand"
    VerticalOptions="FillAndExpand"

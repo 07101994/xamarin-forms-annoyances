@@ -5,7 +5,7 @@
    xmlns:subviews="clr-namespace:AwaitAsyncAntipattern.Forms.Views.Subviews;assembly=AwaitAsyncAntipattern.Forms"
    xmlns:utils="clr-namespace:SharedForms.Common.Utils;assembly=SharedForms"
    x:Class="AwaitAsyncAntipattern.Forms.Views.Pages.BalloonsAndListsPage"
-   BackgroundColor="{x:Static utils:Colors.PALE_GRAY}"
+   BackgroundColor="{x:Static utils:ColorUtils.PALE_GRAY}"
 >
    <ContentPage.Content>
       <Grid
