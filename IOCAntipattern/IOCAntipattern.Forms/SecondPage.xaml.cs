@@ -36,24 +36,19 @@ namespace IOCAntipattern.Forms
 
    #endregion
 
-   public interface IReportDisposal
-   {
-      event EventHandler<object> IsDisposing;
-   }
-
    // [XamlCompilation(XamlCompilationOptions.Compile)]
-   public partial class SecondPage : ContentPage, IReportDisposal
+   public partial class SecondPage : ContentPage
    {
       public SecondPage()
       {
-         using (var scope = AppContainer.Container.BeginLifetimeScope(this))
-         {
-            BindingContext = scope.Resolve<ISecondViewModel>();
-         }
+            using (var scope = AppContainer.Container.BeginLifetimeScope(this))
+            {
+               BindingContext = scope.Resolve<ISecondViewModel>();
+            }
 
-         InitializeComponent();
+        InitializeComponent();
       }
 
-      public event EventHandler<object> IsDisposing;
-   }
+        internal void Stop() => (BindingContext as SecondViewModel).Stop();
+    }
 }
