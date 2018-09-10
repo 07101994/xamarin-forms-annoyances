@@ -28,7 +28,8 @@ namespace IOCAntipattern.Forms
 {
    using System;
    using System.Diagnostics;
-   using System.Threading.Tasks;
+    using System.Threading;
+    using System.Threading.Tasks;
    using Xamarin.Forms;
 
    public interface ISecondViewModel
@@ -37,17 +38,21 @@ namespace IOCAntipattern.Forms
 
    public class SecondViewModel : ISecondViewModel, IDisposable
    {
+        private CancellationTokenSource cancelled = new CancellationTokenSource();
+        private EventWaitHandle finalized = new ManualResetEvent(false);
+
       public SecondViewModel()
       {
          Device.BeginInvokeOnMainThread
             (
                async () =>
                {
-                  while(true)
+                  while(!cancelled.IsCancellationRequested)
                   {
                      await Task.Delay(1000);
                      Debug.WriteLine("Second View Model is still alive");
                   }
+                   finalized.Set();
                }
             );
       }
@@ -58,7 +63,13 @@ namespace IOCAntipattern.Forms
          Debug.WriteLine("Second View Model HAS BEEN DISPOSED");
       }
 
-      protected virtual void Dispose(bool disposing)
+        internal void Stop()
+        {
+            cancelled.Cancel();
+            finalized.WaitOne();
+        }
+
+        protected virtual void Dispose(bool disposing)
       {
          ReleaseUnmanagedResources();
          if (disposing)

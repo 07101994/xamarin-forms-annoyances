@@ -76,7 +76,8 @@ namespace IOCAntipattern.Forms
                   Debug.WriteLine("Finished assigning the main page to the original main page.");
 #endif
 
-                  // Force clean-up
+                   // Force clean-up
+                   secondPage.Stop();
                   secondPage = null;
                   GC.Collect();
                });
